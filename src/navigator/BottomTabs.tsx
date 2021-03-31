@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {useEffect} from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {
   RouteProp,
@@ -7,13 +7,14 @@ import {
 
 import {RootStackNavigation, RootStackParamList} from '@/navigator/index';
 
-import IndexScreen from '@/pages/Home/index';
+import IconFont from '@/assets/iconfont/index';
 import ListenScreen from '@/pages/Listen/index';
 import FoundScreen from '@/pages/Found';
 import AccountScreen from '@/pages/Account';
+import HomeTabs from '@/navigator/HomeTabs';
 
 export type BottomTabParamsList = {
-  Home: undefined;
+  HomeTabs: undefined;
   Listen: undefined;
   Found: undefined;
   Account: undefined;
@@ -28,11 +29,9 @@ interface IProps {
   route: Route;
 }
 
-function getHeaderTitle(route: Route): string {
-  const routeName = getFocusedRouteNameFromRoute(route) ?? 'Home';
-
+function getHeaderTitle(routeName: string): string {
   switch (routeName) {
-    case 'Home':
+    case 'HomeTabs':
       return '首页';
     case 'Listen':
       return '我听';
@@ -45,29 +44,60 @@ function getHeaderTitle(route: Route): string {
   }
 }
 
-class BottomTabs extends Component<IProps, any> {
-  constructor(props: any) {
-    super(props);
-  }
-
-  componentDidUpdate() {
-    const {navigation, route} = this.props;
-    let title = getHeaderTitle(route);
+function BottomTabs({navigation, route}: IProps) {
+  useEffect(() => {
+    const routeName = getFocusedRouteNameFromRoute(route) ?? 'HomeTabs';
+    let title = getHeaderTitle(routeName);
     navigation.setOptions({
-      headerTitle: title,
+      headerTitle: routeName === 'HomeTabs' ? '' : title,
+      headerTransparent: routeName === 'HomeTabs',
     });
-  }
+  }, [route, navigation]);
 
-  render() {
-    return (
-      <Tab.Navigator tabBarOptions={{activeTintColor: '#f86442'}}>
-        <Tab.Screen name={'Home'} component={IndexScreen} />
-        <Tab.Screen name={'Listen'} component={ListenScreen} />
-        <Tab.Screen name={'Found'} component={FoundScreen} />
-        <Tab.Screen name={'Account'} component={AccountScreen} />
-      </Tab.Navigator>
-    );
-  }
+  return (
+    <Tab.Navigator tabBarOptions={{activeTintColor: '#f86442'}}>
+      <Tab.Screen
+        name={'HomeTabs'}
+        component={HomeTabs}
+        options={{
+          tabBarLabel: '首页',
+          tabBarIcon: ({color, size}) => (
+            <IconFont name={'icon-shouye'} size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name={'Listen'}
+        component={ListenScreen}
+        options={{
+          tabBarLabel: '我听',
+          tabBarIcon: ({color, size}) => (
+            <IconFont name={'icon-shoucang'} size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name={'Found'}
+        component={FoundScreen}
+        options={{
+          tabBarLabel: '发现',
+          tabBarIcon: ({color, size}) => (
+            <IconFont name={'icon-faxian'} size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name={'Account'}
+        component={AccountScreen}
+        options={{
+          tabBarLabel: '我的',
+          tabBarIcon: ({color, size}) => (
+            <IconFont name={'icon-user'} size={size} color={color} />
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  );
 }
 
 export default BottomTabs;
