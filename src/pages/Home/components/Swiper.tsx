@@ -8,20 +8,33 @@ import {View, StyleSheet, ListRenderItemInfo} from 'react-native';
 
 import {ICarousel} from '@/models/home';
 import {hp, viewportWidth, wp} from '@/utils/index';
+import {RootState} from '@/models/index';
+import {connect, ConnectedProps} from 'react-redux';
 
 const sliderWidth = viewportWidth;
 const slideWidth = wp(90);
-const slideHeight = hp(26);
+export const slideHeight = hp(26);
 const itemWidth = slideWidth + wp(2) * 2;
 
-interface IProps {
-  data: ICarousel[];
-}
+const mapStateToProps = ({home}: RootState) => ({
+  data: home.carouselList,
+  activeCarouselIndex: home.activeCarouselIndex,
+});
 
-export default class Swiper extends React.Component<IProps, any> {
-  state = {
-    activeSlide: 0,
-  };
+const connector = connect(mapStateToProps);
+
+type MadelState = ConnectedProps<typeof connector>;
+
+interface IProps extends MadelState {}
+
+class Swiper extends React.Component<IProps, any> {
+  componentDidMount() {
+    const {dispatch} = this.props;
+    dispatch({
+      type: 'home/fetchCarouselList',
+    });
+  }
+
   _renderItem = (
     {item, index}: ListRenderItemInfo<ICarousel>,
     parallaxProps?: AdditionalParallaxProps,
@@ -42,14 +55,17 @@ export default class Swiper extends React.Component<IProps, any> {
   };
 
   _onSnapToItem = (index: number) => {
-    this.setState({
-      activeSlide: index,
+    const {dispatch} = this.props;
+    dispatch({
+      type: 'home/setState',
+      payload: {
+        activeCarouselIndex: index,
+      },
     });
   };
 
   get pagination() {
-    const {activeSlide} = this.state;
-    const {data} = this.props;
+    const {data, activeCarouselIndex: activeSlide} = this.props;
     return (
       <View style={styles.paginationWrapper}>
         <Pagination
@@ -84,6 +100,8 @@ export default class Swiper extends React.Component<IProps, any> {
     );
   }
 }
+
+export default connector(Swiper);
 
 const styles = StyleSheet.create({
   imageContainer: {

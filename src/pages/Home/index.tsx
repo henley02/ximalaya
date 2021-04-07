@@ -5,6 +5,8 @@ import {
   View,
   Text,
   StyleSheet,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from 'react-native';
 import {RootStackNavigation} from '@/navigator/index';
 import {connect, ConnectedProps} from 'react-redux';
@@ -13,16 +15,17 @@ import Swiper from '@/pages/Home/components/Swiper';
 import Guess from '@/pages/Home/components/Guess';
 import Channel from '@/pages/Home/components/Channel';
 import {IChannel} from '@/models/home';
+import {slideHeight} from '@/pages/Home/components/Swiper';
 
 interface IState {
   refreshing: boolean;
 }
 
 const mapStateToProps = ({home, loading}: RootState) => ({
-  carouselList: home.carouselList,
   channelList: home.channelList,
   loading: loading.effects['home/fetchChannelList'],
   hasMore: home.pagination.hasMore,
+  gradientVisible: home.gradientVisible,
 });
 
 const connector = connect(mapStateToProps);
@@ -40,9 +43,6 @@ class HomeScreen extends React.Component<IProps, IState> {
 
   componentDidMount() {
     const {dispatch} = this.props;
-    dispatch({
-      type: 'home/fetchCarouselList',
-    });
     dispatch({
       type: 'home/fetchChannelList',
     });
@@ -91,12 +91,29 @@ class HomeScreen extends React.Component<IProps, IState> {
     });
   };
 
+  _onScroll = ({nativeEvent}: NativeSyntheticEvent<NativeScrollEvent>) => {
+    console.log(nativeEvent);
+    const offsetY = nativeEvent.contentOffset.y;
+    let newGradientVisible = offsetY < slideHeight;
+    const {dispatch, gradientVisible} = this.props;
+
+    if (newGradientVisible !== gradientVisible) {
+      dispatch({
+        type: 'home/setState',
+        payload: {
+          gradientVisible: newGradientVisible,
+        },
+      });
+    }
+  };
+
   get header() {
-    const {carouselList} = this.props;
     return (
       <>
-        <Swiper data={carouselList} />
-        <Guess />
+        <Swiper />
+        <View style={styles.guessWrapper}>
+          <Guess />
+        </View>
       </>
     );
   }
@@ -118,6 +135,7 @@ class HomeScreen extends React.Component<IProps, IState> {
       );
     }
   }
+
   get empty() {
     const {loading} = this.props;
     if (loading) {
@@ -129,6 +147,7 @@ class HomeScreen extends React.Component<IProps, IState> {
       </View>
     );
   }
+
   render() {
     const {channelList} = this.props;
     const {refreshing} = this.state;
@@ -143,6 +162,7 @@ class HomeScreen extends React.Component<IProps, IState> {
         refreshing={refreshing}
         onEndReached={this._onEndReached}
         onEndReachedThreshold={0.2}
+        onScroll={this._onScroll}
         ListFooterComponent={this.footer}
       />
     );
@@ -159,5 +179,8 @@ const styles = StyleSheet.create({
   emptyContainer: {
     alignItems: 'center',
     paddingVertical: 30,
+  },
+  guessWrapper: {
+    backgroundColor: '#fff',
   },
 });

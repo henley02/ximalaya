@@ -3,7 +3,7 @@ import Config from 'react-native-config';
 
 axios.defaults.baseURL = Config.API_URL;
 axios.defaults.headers = {
-  icode: '',
+  icode: 'C0F3FDDC866AE6E9',
 };
 
 axios.interceptors.request.use(

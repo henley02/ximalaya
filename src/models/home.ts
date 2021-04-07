@@ -39,6 +39,8 @@ export interface HomeState {
   guessList: IGuess[];
   channelList: IChannel[];
   pagination: IPagination;
+  activeCarouselIndex: number; //  当前轮播图的下标
+  gradientVisible: boolean; // 是否显示渐变色
 }
 
 interface HomeModel extends Model {
@@ -63,6 +65,8 @@ const initialState: HomeState = {
     total: 0,
     hasMore: true,
   },
+  activeCarouselIndex: 0,
+  gradientVisible: true,
 };
 
 const homeModel: HomeModel = {
